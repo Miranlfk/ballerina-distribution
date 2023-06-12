@@ -111,10 +111,15 @@ jobs:
 #           timeout: "10m0s"
       - name: cosign-installer
         uses: sigstore/cosign-installer@v3.0.3
-      - name: Read release notes
+      - name: Read release notes from file
         id: release_notes
-        run: |
-          echo "::set-output name=notes::$(cat docs/Release.md)"
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const releaseNotes = fs.readFileSync('docs/Release.md', 'utf8');
+            core.setOutput('notes', releaseNotes);
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
