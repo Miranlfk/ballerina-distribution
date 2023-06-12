@@ -111,6 +111,10 @@ jobs:
 #           timeout: "10m0s"
       - name: cosign-installer
         uses: sigstore/cosign-installer@v3.0.3
+      - name: Read release notes
+        id: release_notes
+        run: |
+          echo "::set-output name=notes::$(cat docs/Release.md)"
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
@@ -119,9 +123,7 @@ jobs:
         with:
           tag_name: "v${{ steps.version-set.outputs.taggedVersion }}"
           release_name: ${{ steps.version-set.outputs.taggedVersion }}
-          body:
-            |
-            $(cat docs/Release.md)
+          body: ${{ steps.release_notes.outputs.notes }}
           draft: false
           prerelease: ${{ github.event.inputs.isPreRelease }}
       - name: Create linux-deb Installer
