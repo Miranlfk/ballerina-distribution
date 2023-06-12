@@ -20,7 +20,7 @@
 - **[ballerina-2201.7.0-swan-lake-windows-x64.msi](https://github.com/Miranlfk/ballerina-distribution/releases/download/v2201.7.0/ballerina-2201.7.0-swan-lake-windows-x64.msi)**
 
 
->For more builds across platforms and architectures see the `Assets` section below.
+For more builds across platforms and architectures see the `Assets` section below.
 
 
 ## Signatures and Verification
