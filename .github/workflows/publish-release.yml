@@ -629,6 +629,15 @@ jobs:
           asset_name: ballerina-${{ needs.publish-release.outputs.project-version }}-windows-x64.msi.sig
           asset_path: ./ballerina-${{ needs.publish-release.outputs.project-version }}-windows-x64.msi.sig
           asset_content_type: application/octet-stream
+      - name: Upload Release Note 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.publish-release.outputs.upload-asset-url }}
+          asset_name: Release.md
+          asset_path: docs/Release.md
+          asset_content_type: application/octet-stream
       - name: Install Ballerina msi
         run: msiexec /i w\target\msi\ballerina-${{ needs.publish-release.outputs.project-version }}-windows-x64.msi /quiet /qr
         shell: cmd
