@@ -124,7 +124,7 @@ jobs:
       #   env:
       #     NEW_VERSION: ${{ steps.version-set.outputs.taggedVersion }}
       - name: Update Markdown
-        run: python docs/update_script.py
+        run: python docs/update_version.py
         env:
           NEW_VERSION: ${{ steps.version-set.outputs.taggedVersion }}
       - name: Read release notes from file
