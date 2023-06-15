@@ -123,6 +123,14 @@ jobs:
       #     node docs/update_version.js
       #   env:
       #     NEW_VERSION: ${{ steps.version-set.outputs.taggedVersion }}
+      - name: Install GitHub CLI
+        run: |
+          npm install -g github-cli
+          gh --version
+      - name: Get Markdown file
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh repo view Miranlfk/ballerina-dev-website -R "downloads/verification-notes/verification_notes_template.md" --json path --jq ".path" > release_notes.md
       - name: Update Markdown
         run: python docs/update_version.py
         env:
