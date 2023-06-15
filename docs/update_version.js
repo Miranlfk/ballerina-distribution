@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const markdownFile = 'release_notes.md';
+const markdownFile = 'docs/release_notes.md';
 const versionPlaceholder = 'VERSION_PLACEHOLDER';
 const newVersion = process.env.NEW_VERSION;
 
