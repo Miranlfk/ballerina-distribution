@@ -111,14 +111,20 @@ jobs:
 #           timeout: "10m0s"
       - name: cosign-installer
         uses: sigstore/cosign-installer@v3.0.3
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      - name: Update Markdown file
-        run: |
-          npm install
-          node docs/update_version.js
+      - name: Set up Python
+        uses: actions/setup-python@v2
+      # - name: Set up Node.js
+      #   uses: actions/setup-node@v2
+      #   with:
+      #     node-version: '14'
+      # - name: Update Markdown file
+      #   run: |
+      #     npm install
+      #     node docs/update_version.js
+      #   env:
+      #     NEW_VERSION: ${{ steps.version-set.outputs.taggedVersion }}
+      - name: Update Markdown
+        run: python docs/update_script.py
         env:
           NEW_VERSION: ${{ steps.version-set.outputs.taggedVersion }}
       - name: Read release notes from file
