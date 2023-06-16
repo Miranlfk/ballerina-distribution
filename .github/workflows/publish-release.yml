@@ -128,9 +128,13 @@ jobs:
           npm install -g github-cli
           gh --version
       - name: Get Markdown file
+        id: file-url
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh repo view Miranlfk/ballerina-dev-website "downloads/verification-notes/verification_notes_template.md" --json path --jq ".path" > release_notes.md
+        run: |
+          gh repo view Miranlfk/ballerina-dev-website --json url --jq '.clone_url'
+          gh extension install cli-ext-download
+          gh download ${{ steps.file-url.outputs.url }}/downloads/verification-notes/verification_notes_template.md release_notes.md
       - name: Update Markdown
         run: python docs/update_version.py
         env:
