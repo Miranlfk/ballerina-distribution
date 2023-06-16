@@ -132,12 +132,12 @@ jobs:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #   run: gh repo view Miranlfk/ballerina-dev-website -R "downloads/verification-notes/verification_notes_template.md" --json path --jq ".path" > release_notes.md
       - name: Retrieve source file
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           FILE_PATH="downloads/verification-notes/verification_notes_template.md"
           FILE_CONTENT=$(gh api repos/${{ github.actor }}/ballerina-dev-website/contents/$FILE_PATH --jq '.content' --raw-output)
           echo "$FILE_CONTENT" | base64 -d > release_notes.md
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update Markdown
         run: python docs/update_version.py
         env:
