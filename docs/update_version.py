@@ -1,6 +1,6 @@
 import os
 
-markdown_file = 'docs/release_notes.md'
+markdown_file = 'release_notes.md'
 version_placeholder = 'version'
 new_version = os.getenv('NEW_VERSION')
 
