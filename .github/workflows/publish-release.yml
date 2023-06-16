@@ -133,8 +133,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh repo view Miranlfk/ballerina-dev-website --json url --jq '.clone_url'
-          gh extension install cli-ext-download
-          gh download ${{ steps.file-url.outputs.url }}/downloads/verification-notes/verification_notes_template.md release_notes.md
+          gh api repos/Miranlfk/ballerina-dev-website/contents/downloads/verification-notes/verification_notes_template.md -H 'Accept: application/vnd.github.v3.raw' --silent > release_notes.md
       - name: Update Markdown
         run: python docs/update_version.py
         env:
