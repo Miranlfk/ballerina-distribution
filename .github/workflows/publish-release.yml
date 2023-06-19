@@ -117,12 +117,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '14'
-      # - name: Update Markdown file
-      #   run: |
-      #     npm install
-      #     node docs/update_version.js
-      #   env:
-      #     NEW_VERSION: ${{ steps.version-set.outputs.taggedVersion }}
       - name: Install GitHub CLI
         run: |
           npm install -g github-cli
@@ -134,28 +128,34 @@ jobs:
         run: |
           gh repo view Miranlfk/ballerina-dev-website --json url --jq '.clone_url'
           gh api repos/Miranlfk/ballerina-dev-website/contents/downloads/verification-notes/verification_notes_template.md -H 'Accept: application/vnd.github.v3.raw' --silent > release_notes.md
-      - name: Update Markdown
-        run: python docs/update_version.py
+      - name: Update Markdown file
+        run: |
+          npm install
+          node docs/update_version.js
         env:
           NEW_VERSION: ${{ steps.version-set.outputs.taggedVersion }}
-      # - name: Read release notes from file
-      #   id: release_notes
-      #   uses: actions/github-script@v4
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     script: |
-      #       const fs = require('fs');
-      #       const releaseNotes = fs.readFileSync('release_notes.md', 'utf8');
-      #       core.setOutput('notes', releaseNotes);
+      # - name: Update Markdown
+      #   run: python docs/update_version.py
+      #   env:
+      #     NEW_VERSION: ${{ steps.version-set.outputs.taggedVersion }}
       - name: Read release notes from file
         id: release_notes
         uses: actions/github-script@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            python 'with open("release_notes.md", "r") as file:
-            content = file.read()'
-            core.setOutput('notes', content);
+            const fs = require('fs');
+            const releaseNotes = fs.readFileSync('release_notes.md', 'utf8');
+            core.setOutput('notes', releaseNotes);
+      # - name: Read release notes from file
+      #   id: release_notes
+      #   uses: actions/github-script@v4
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     script: |
+      #       python 'with open("release_notes.md", "r") as file:
+      #       content = file.read()'
+      #       core.setOutput('notes', content);
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
