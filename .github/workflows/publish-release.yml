@@ -161,7 +161,7 @@ jobs:
         uses: actions/github-script@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run: |
+          script: |
             python 'with open("release_notes.md", "r", encoding='utf8') as file:
             content = file.read()'
             core.setOutput('notes', content);
