@@ -137,34 +137,34 @@ jobs:
       #       const fs = require('fs');
       #       const releaseNotes = fs.readFileSync('release_notes.md', 'utf8');
       #       core.setOutput('notes', releaseNotes);
-      - name: Update Markdown file
-        run: |
-          npm install
-          node docs/update_version.js
-        env:
-          NEW_VERSION: ${{ steps.version-set.outputs.taggedVersion }}
-      # - name: Update Markdown
-      #   run: python docs/update_version.py
+      # - name: Update Markdown file
+      #   run: |
+      #     npm install
+      #     node docs/update_version.js
       #   env:
       #     NEW_VERSION: ${{ steps.version-set.outputs.taggedVersion }}
-      - name: Read release notes from file
-        id: release_notes
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const releaseNotes = fs.readFileSync('release_notes.md', 'utf8');
-            core.setOutput('notes', releaseNotes);
+      - name: Update Markdown
+        run: python docs/update_version.py
+        env:
+          NEW_VERSION: ${{ steps.version-set.outputs.taggedVersion }}
       # - name: Read release notes from file
       #   id: release_notes
       #   uses: actions/github-script@v4
       #   with:
       #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     run: |
-      #       python 'with open("release_notes.md", "r") as file:
-      #       content = file.read()'
-      #       core.setOutput('notes', content);
+      #     script: |
+      #       const fs = require('fs');
+      #       const releaseNotes = fs.readFileSync('release_notes.md', 'utf8');
+      #       core.setOutput('notes', releaseNotes);
+      - name: Read release notes from file
+        id: release_notes
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            python 'with open("release_notes.md", "r", encoding='utf8') as file:
+            content = file.read()'
+            core.setOutput('notes', content);
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
