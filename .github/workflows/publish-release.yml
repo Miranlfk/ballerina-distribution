@@ -153,10 +153,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            python -c 'with open("release_notes.md", "r") as file:
-            content = file.read()
-            print(content)'
-            core.setOutput('notes', releaseNotes);
+            python 'with open("release_notes.md", "r") as file:
+            content = file.read()'
+            core.setOutput('notes', content);
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
