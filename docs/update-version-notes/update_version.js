@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 const markdownFile = 'release_notes.md';
-const versionPlaceholder = /{{ version }}/g;
+const versionPlaceholder = '{{ version }}';
 const newVersion = process.env.NEW_VERSION;
 
 fs.readFile(markdownFile, 'utf8', (err, data) => {
@@ -10,7 +10,7 @@ fs.readFile(markdownFile, 'utf8', (err, data) => {
     return;
   }
 
-  const updatedContent = data.replace(versionPlaceholder, newVersion);
+  const updatedContent = data.replace(new RegExp(versionPlaceholder, 'g'), newVersion);
 
   fs.writeFile(markdownFile, updatedContent, 'utf8', (err) => {
     if (err) {
