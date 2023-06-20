@@ -111,6 +111,8 @@ jobs:
 #           timeout: "10m0s"
       - name: cosign-installer
         uses: sigstore/cosign-installer@v3.0.3
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
           node-version: '14'
       - name: Install GitHub CLI
