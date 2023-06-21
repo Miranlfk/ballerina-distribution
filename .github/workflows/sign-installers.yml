@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+      - name: cosign-installer
+        uses: sigstore/cosign-installer@v3.0.3
       - name: Install Node
         uses: actions/setup-node@v2
         with:
@@ -28,7 +30,6 @@ jobs:
         run: |
           release=$(gh release view --json tagName -R Miranlfk/ballerina-distribution --jq '.tagName' | sed 's/^v//')
           echo "::set-output name=tag::$release"
-          echo $release
       - name: Retrieve MacOS Installer
         run:
           |
