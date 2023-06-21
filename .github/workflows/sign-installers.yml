@@ -26,7 +26,7 @@ jobs:
         env:
           GH_TOKEN : ${{ secrets.GITHUB_TOKEN }}
         run: |
-          release=$(gh release view --json tag_name -R Miranlfk/ballerina-distribution --jq '.tag_name')
+          release=$(gh release view --json tagName -R Miranlfk/ballerina-distribution --jq '.tagName')
           echo "::set-output name=tag::$release"
           echo $release
       - name: Retrieve MacOS Installer
