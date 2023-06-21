@@ -26,9 +26,6 @@ jobs:
         env:
           GH_TOKEN : ${{ secrets.GITHUB_TOKEN }}
         run: |
-          latest_release=$(git describe --abbrev=0 --tags)
-          echo "::set-output name=release_tag::$latest_release"
-          echo $latest_release
           release=$(gh release view --json tag_name -R Miranlfk/ballerina-distribution --jq '.tag_name')
           echo "::set-output name=tag::$release"
           echo $release
