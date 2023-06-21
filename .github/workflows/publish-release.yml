@@ -128,7 +128,7 @@ jobs:
           gh api repos/Miranlfk/ballerina-dev-website/contents/downloads/verification-notes/release-artfiacts-verification.md -H 'Accept: application/vnd.github.v3.raw' > release_notes.md
       - name: Update Markdown file
         run: |
-          sed 's/{{ version }}/${{ steps.version-set.outputs.taggedVersion }}/g' release_notes.md
+          sed "s/'{{ version }}'/${{ steps.version-set.outputs.taggedVersion }}/g" release_notes.md
       - name: Read release notes from file
         id: release_notes
         uses: actions/github-script@v4
