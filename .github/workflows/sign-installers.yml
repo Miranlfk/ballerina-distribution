@@ -23,10 +23,8 @@ jobs:
           npm install -g github-cli
       - name: Retrieve Git Tag
         id: retrieve-tag
-        env:
-          GH_TOKEN : ${{ secrets.GITHUB_TOKEN }}
         run: |
-          release_id=$(gh release view Miranlfk/ballerina-distribution --json tag_name --jq '.tag_name')
+          release_id=$(gh release view ${{ github.repository }} --json tag_name --jq '.tagName')
           echo "::set-output name=tag::$release_id"
       - name: Retrieve MacOS Installer
         run:
