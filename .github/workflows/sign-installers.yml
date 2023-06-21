@@ -14,9 +14,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      - name: Retrieve Git Tag
-        id: retrieve-tag
-        run: echo ::set-output name=tag::$(git describe --tags --abbrev=0)
       - name: Install Node
         uses: actions/setup-node@v2
         with:
@@ -24,6 +21,11 @@ jobs:
       - name: Install GitHub CLI
         run: |
           npm install -g github-cli
+      - name: Retrieve Git Tag
+        id: retrieve-tag
+        run: |
+          release_id=$(gh release view ${{ github.repository }} --json tag_name --jq '.tag_name')
+          echo "::set-output name=tag::$release_id"
       - name: Retrieve MacOS Installer
         run:
           |
