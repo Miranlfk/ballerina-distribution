@@ -129,15 +129,20 @@ jobs:
       - name: Update Markdown file
         run: |
           sed -i 's/{{ version }}/${{ steps.version-set.outputs.taggedVersion }}/g' release_notes.md
+      # - name: Read release notes from file
+      #   id: release_notes
+      #   uses: actions/github-script@v4
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     script: |
+      #       const fs = require('fs');
+      #       const releaseNotes = fs.readFileSync('release_notes.md', 'utf8');
+      #       core.setOutput('notes', releaseNotes);
       - name: Read release notes from file
         id: release_notes
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const releaseNotes = fs.readFileSync('release_notes.md', 'utf8');
-            core.setOutput('notes', releaseNotes);
+        run: |
+          md_file_contents=$(cat $release_notes.md)
+          echo "::set-output name=notes::$md_file_contents"
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
