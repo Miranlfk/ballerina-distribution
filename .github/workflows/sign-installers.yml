@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       versionName:
-        description: 'Specify the Version name eg: 2201.x.x'
+        description: 'Specify the Version name eg: 2201.6.0'
         required: true
         default: ''
 
