@@ -7,12 +7,16 @@ on:
         description: 'Release Version e.g., 2201.1.1, 2201.1.1-rc1'
         default: '2201.1.1'
         required: true
+        
+permissions:
+  id-token: write 
+  contents: write
 
 jobs:
   publish-artifacts:
     name: Publish Release Artifacts
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'ballerina-platform'
+    # if: github.repository_owner == 'ballerina-platform'
 
     steps:
       - name: Checkout Repository
@@ -23,6 +27,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '11'
+      - name: cosign-installer
+        uses: sigstore/cosign-installer@v3.0.3
 
       - name: Set version env variable
         id: set-version
@@ -46,7 +52,7 @@ jobs:
 
       - name: Download artifacts
         run: |
-          baseUrl="https://github.com/ballerina-platform/ballerina-distribution/releases/download/v$GIT_TAG"
+          baseUrl="https://github.com/Miranlfk/ballerina-distribution/releases/download/v$GIT_TAG"
           updateNumber=${{ steps.set-version.outputs.updateNumber }}
           rm -rf $VERSION
           mkdir $VERSION
@@ -62,11 +68,11 @@ jobs:
             wget "$baseUrl/ballerina-$LONG_VERSION-macos-arm-x64.pkg"
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
-          packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
-          packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
-          devCentralToken: ${{ secrets.BALLERINA_DEV_CENTRAL_ACCESS_TOKEN }}
-          ballerinaBotWorkflow: $ {{ secrets.BALLERINA_BOT_WORKFLOW }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          packageUser: ${{ github.actor }}
+          packagePAT: ${{ secrets.GITHUB_TOKEN }}
+          # devCentralToken: ${{ secrets.BALLERINA_DEV_CENTRAL_ACCESS_TOKEN }}
+          # ballerinaBotWorkflow: $ {{ secrets.BALLERINA_BOT_WORKFLOW }}
 
       - name: Generate metadata json
         working-directory: ${{ steps.set-version.outputs.version }}
@@ -134,30 +140,38 @@ jobs:
           DOCKER_REPO=${{ steps.process-docker.outputs.dockerRepo }}
           cp $VERSION/ballerina-$VERSION.zip $DOCKER_REPO/base/docker/
 
-          docker build --no-cache=true --squash --build-arg BALLERINA_DIST=ballerina-$VERSION.zip -t ballerina/ballerina:$GIT_TAG  $DOCKER_REPO/base/docker/
+          docker build --no-cache=true --squash --build-arg BALLERINA_DIST=ballerina-$VERSION.zip -t Miranlfk/bal:$GIT_TAG  $DOCKER_REPO/base/docker/
           rm $DOCKER_REPO/base/docker/ballerina-$VERSION.zip
           docker push ballerina/ballerina:$GIT_TAG
+      - name: Sign Docker Image
+        run: |
+          cosign sign Miranlfk/bal:$GIT_TAG
+      - name: Verify Docker Image
+        run: |
+          cosign verify Miranlfk/bal:$GIT_TAG --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
           docker rmi ballerina/ballerina:$GIT_TAG
           docker image prune -f
 
-      - name: Build and push dev container
-        run: |
-          DOCKER_REPO=${{ steps.process-docker.outputs.dockerRepo }}
-          cp $VERSION/ballerina-$LONG_VERSION-linux-x64.deb $DOCKER_REPO/base/devcontainer/
 
-          docker build --no-cache=true --squash --build-arg BALLERINA_DIST=ballerina-$LONG_VERSION-linux-x64.deb -t ballerina/ballerina-devcontainer:$GIT_TAG $DOCKER_REPO/base/devcontainer
-          rm $DOCKER_REPO/base/devcontainer/ballerina-$LONG_VERSION-linux-x64.deb
-          docker push ballerina/ballerina-devcontainer:$GIT_TAG
-          docker rmi ballerina/ballerina-devcontainer:$GIT_TAG
-          docker image prune -f
 
-      - name: Publish Artifacts
-        run: |
-          sudo apt-get install python3-setuptools
-          python3 -m pip install --user awscli
-          aws configure set aws_access_key_id $s3_acc_id
-          aws configure set aws_secret_access_key $s3_acc_key
-          aws s3 cp $VERSION s3://dist-dev.ballerina.io/downloads/$VERSION --recursive
-        env:
-          s3_acc_id: ${{ secrets.S3_ID }}
-          s3_acc_key: ${{ secrets.S3_KEY }}
+      # - name: Build and push dev container
+      #   run: |
+      #     DOCKER_REPO=${{ steps.process-docker.outputs.dockerRepo }}
+      #     cp $VERSION/ballerina-$LONG_VERSION-linux-x64.deb $DOCKER_REPO/base/devcontainer/
+
+      #     docker build --no-cache=true --squash --build-arg BALLERINA_DIST=ballerina-$LONG_VERSION-linux-x64.deb -t ballerina/ballerina-devcontainer:$GIT_TAG $DOCKER_REPO/base/devcontainer
+      #     rm $DOCKER_REPO/base/devcontainer/ballerina-$LONG_VERSION-linux-x64.deb
+      #     docker push ballerina/ballerina-devcontainer:$GIT_TAG
+      #     docker rmi ballerina/ballerina-devcontainer:$GIT_TAG
+      #     docker image prune -f
+
+      # - name: Publish Artifacts
+      #   run: |
+      #     sudo apt-get install python3-setuptools
+      #     python3 -m pip install --user awscli
+      #     aws configure set aws_access_key_id $s3_acc_id
+      #     aws configure set aws_secret_access_key $s3_acc_key
+      #     aws s3 cp $VERSION s3://dist-dev.ballerina.io/downloads/$VERSION --recursive
+      #   env:
+      #     s3_acc_id: ${{ secrets.S3_ID }}
+      #     s3_acc_key: ${{ secrets.S3_KEY }}
