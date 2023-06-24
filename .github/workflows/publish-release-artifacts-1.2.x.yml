@@ -72,17 +72,17 @@ jobs:
 
       - name: Sign Release artifacts
         run: |
-          cosign sign-blob ballerina-windows-installer-x64-$VERSION.msi --output-certificate ballerina-windows-installer-x64-$VERSION.msi.pem --output-signature ballerina-windows-installer-x64-$VERSION.msi.sig --yes
-          cosign sign-blob ballerina-linux-installer-x64-$VERSION.deb --output-certificate ballerina-linux-installer-x64-$VERSION.deb.pem --output-signature ballerina-linux-installer-x64-$VERSION.deb.sig --yes
-          cosign sign-blob ballerina-linux-installer-x64-$VERSION.rpm --output-certificate ballerina-linux-installer-x64-$VERSION.rpm.pem --output-signature ballerina-linux-installer-x64-$VERSION.rpm.sig --yes
-          cosign sign-blob ballerina-macos-installer-x64-$VERSION.pkg --output-certificate ballerina-macos-installer-x64-$VERSION.pkg.pem --output-signature ballerina-macos-installer-x64-$VERSION.pkg.sig --yes
+          cosign sign-blob ballerina-windows-installer-x64-${{ steps.set-version.outputs.version }}.msi --output-certificate ballerina-windows-installer-x64-${{ steps.set-version.outputs.version }}.msi.pem --output-signature ballerina-windows-installer-x64-${{ steps.set-version.outputs.version }}.msi.sig --yes
+          cosign sign-blob ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.deb --output-certificate ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.deb.pem --output-signature ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.deb.sig --yes
+          cosign sign-blob ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.rpm --output-certificate ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.rpm.pem --output-signature ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.rpm.sig --yes
+          cosign sign-blob ballerina-macos-installer-x64-${{ steps.set-version.outputs.version }}.pkg --output-certificate ballerina-macos-installer-x64-${{ steps.set-version.outputs.version }}.pkg.pem --output-signature ballerina-macos-installer-x64-${{ steps.set-version.outputs.version }}.pkg.sig --yes
 
       - name: Verify Release artifacts
         run: |
-          cosign verify-blob ballerina-windows-installer-x64-$VERSION.msi --certificate ballerina-windows-installer-x64-$VERSION.msi.pem --signature ballerina-windows-installer-x64-$VERSION.msi.sig --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts-1.2.x.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
-          cosign verify-blob ballerina-linux-installer-x64-$VERSION.deb --certificate ballerina-linux-installer-x64-$VERSION.deb.pem --signature ballerina-linux-installer-x64-$VERSION.deb.sig --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts-1.2.x.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
-          cosign verify-blob ballerina-linux-installer-x64-$VERSION.rpm --certificate ballerina-linux-installer-x64-$VERSION.rpm.pem --signature ballerina-linux-installer-x64-$VERSION.rpm.sig --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts-1.2.x.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
-          cosign verify-blob ballerina-macos-installer-x64-$VERSION.pkg --certificate ballerina-macos-installer-x64-$VERSION.pkg.pem --signature ballerina-macos-installer-x64-$VERSION.pkg.sig --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts-1.2.x.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+          cosign verify-blob ballerina-windows-installer-x64-${{ steps.set-version.outputs.version }}.msi --certificate ballerina-windows-installer-x64-${{ steps.set-version.outputs.version }}.msi.pem --signature ballerina-windows-installer-x64-${{ steps.set-version.outputs.version }}.msi.sig --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts-1.2.x.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+          cosign verify-blob ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.deb --certificate ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.deb.pem --signature ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.deb.sig --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts-1.2.x.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+          cosign verify-blob ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.rpm --certificate ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.rpm.pem --signature ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.rpm.sig --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts-1.2.x.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+          cosign verify-blob ballerina-macos-installer-x64-${{ steps.set-version.outputs.version }}.pkg --certificate ballerina-macos-installer-x64-${{ steps.set-version.outputs.version }}.pkg.pem --signature ballerina-macos-installer-x64-${{ steps.set-version.outputs.version }}.pkg.sig --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts-1.2.x.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
 
       - name: Generate metadata json
         working-directory: ${{ steps.set-version.outputs.version }}
@@ -158,14 +158,14 @@ jobs:
         env:
           GH_TOKEN : ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-windows-installer-x64-$VERSION.msi.pem
-          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-windows-installer-x64-$VERSION.msi.sig 
-          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-linux-installer-x64-$VERSION.deb.pem
-          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-linux-installer-x64-$VERSION.deb.sig
-          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-linux-installer-x64-$VERSION.rpm.pem
-          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-linux-installer-x64-$VERSION.rpm.sig
-          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-macos-installer-x64-$VERSION.pkg.pem
-          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-macos-installer-x64-$VERSION.pkg.sig
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-windows-installer-x64-${{ steps.set-version.outputs.version }}.msi.pem
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-windows-installer-x64-${{ steps.set-version.outputs.version }}.msi.sig 
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.deb.pem
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.deb.sig
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.rpm.pem
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-linux-installer-x64-${{ steps.set-version.outputs.version }}.rpm.sig
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-macos-installer-x64-${{ steps.set-version.outputs.version }}.pkg.pem
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-macos-installer-x64-${{ steps.set-version.outputs.version }}.pkg.sig
 
 
       # - name: Publish Artifacts
