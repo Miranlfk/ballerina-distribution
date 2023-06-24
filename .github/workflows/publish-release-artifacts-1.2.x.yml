@@ -8,11 +8,14 @@ on:
         default: '1.2.31'
         required: true
 
+permissions:
+  id-token: write 
+
 jobs:
   publish-artifacts:
     name: Publish Release Artifacts
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'ballerina-platform'
+    # if: github.repository_owner == 'ballerina-platform'
 
     steps:
       - name: Checkout Repository
@@ -23,6 +26,15 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '8'
+      - name: cosign-installer
+        uses: sigstore/cosign-installer@v3.0.3
+      - name: Install Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install GitHub CLI
+        run: |
+          npm install -g github-cli
 
       - name: Set version env variable
         id: set-version
@@ -52,11 +64,25 @@ jobs:
           wget "$baseUrl/ballerina-linux-installer-x64-$VERSION.rpm"
           wget "$baseUrl/ballerina-macos-installer-x64-$VERSION.pkg"
         env:
-          GITHUB_TOKEN: ${{ secrets.BALLERINA_BOT_TOKEN }}
-          packageUser: ${{ secrets.BALLERINA_BOT_USERNAME }}
-          packagePAT: ${{ secrets.BALLERINA_BOT_TOKEN }}
-          devCentralToken: ${{ secrets.BALLERINA_DEV_CENTRAL_ACCESS_TOKEN }}
-          ballerinaBotWorkflow: $ {{ secrets.BALLERINA_BOT_WORKFLOW }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          packageUser: ${{ github.actor }}
+          packagePAT: ${{ secrets.GITHUB_TOKEN }}
+          # devCentralToken: ${{ secrets.BALLERINA_DEV_CENTRAL_ACCESS_TOKEN }}
+          # ballerinaBotWorkflow: $ {{ secrets.BALLERINA_BOT_WORKFLOW }}
+
+      - name: Sign Release artifacts
+        run: |
+          cosign sign-blob ballerina-windows-installer-x64-$VERSION.msi --output-certificate ballerina-windows-installer-x64-$VERSION.msi.pem --output-signature ballerina-windows-installer-x64-$VERSION.msi.sig --yes
+          cosign sign-blob ballerina-linux-installer-x64-$VERSION.deb --output-certificate ballerina-linux-installer-x64-$VERSION.deb.pem --output-signature ballerina-linux-installer-x64-$VERSION.deb.sig --yes
+          cosign sign-blob ballerina-linux-installer-x64-$VERSION.rpm --output-certificate ballerina-linux-installer-x64-$VERSION.rpm.pem --output-signature ballerina-linux-installer-x64-$VERSION.rpm.sig --yes
+          cosign sign-blob ballerina-macos-installer-x64-$VERSION.pkg --output-certificate ballerina-macos-installer-x64-$VERSION.pkg.pem --output-signature ballerina-macos-installer-x64-$VERSION.pkg.sig --yes
+
+      - name: Verify Release artifacts
+        run: |
+          cosign verify-blob ballerina-windows-installer-x64-$VERSION.msi --certificate ballerina-windows-installer-x64-$VERSION.msi.pem --signature ballerina-windows-installer-x64-$VERSION.msi.sig --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts-1.2.x.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+          cosign verify-blob ballerina-linux-installer-x64-$VERSION.deb --certificate ballerina-linux-installer-x64-$VERSION.deb.pem --signature ballerina-linux-installer-x64-$VERSION.deb.sig --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts-1.2.x.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+          cosign verify-blob ballerina-linux-installer-x64-$VERSION.rpm --certificate ballerina-linux-installer-x64-$VERSION.rpm.pem --signature ballerina-linux-installer-x64-$VERSION.rpm.sig --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts-1.2.x.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+          cosign verify-blob ballerina-macos-installer-x64-$VERSION.pkg --certificate ballerina-macos-installer-x64-$VERSION.pkg.pem --signature ballerina-macos-installer-x64-$VERSION.pkg.sig --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts-1.2.x.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
 
       - name: Generate metadata json
         working-directory: ${{ steps.set-version.outputs.version }}
@@ -116,19 +142,39 @@ jobs:
           DOCKER_REPO=${{ steps.process-docker.outputs.dockerRepo }}
           cp $VERSION/ballerina-$VERSION.zip $DOCKER_REPO/base/docker/
 
-          docker build --no-cache=true --squash --build-arg BALLERINA_DIST=ballerina-$VERSION.zip -t ballerina/ballerina:$VERSION  $DOCKER_REPO/base/docker/
+          docker build --no-cache=true --squash --build-arg BALLERINA_DIST=ballerina-$VERSION.zip -t miranlfk/bal:$VERSION  $DOCKER_REPO/base/docker/
           rm $DOCKER_REPO/base/docker/ballerina-$VERSION.zip
-          docker push ballerina/ballerina:$VERSION
-          docker rmi ballerina/ballerina:$VERSION
+          docker push miranlfk/bal:$VERSION
+      - name: Sign Docker Image
+        run: |
+          cosign sign miranlfk/bal:$VERSION --yes
+
+      - name: Verify Docker Image
+        run: |
+          docker rmi miranlfk/bal:$VERSION
           docker image prune -f
 
-      - name: Publish Artifacts
-        run: |
-          sudo apt-get install python3-setuptools
-          python3 -m pip install --user awscli
-          aws configure set aws_access_key_id $s3_acc_id
-          aws configure set aws_secret_access_key $s3_acc_key
-          aws s3 cp $VERSION s3://dist-dev.ballerina.io/downloads/$VERSION --recursive
+      - name: Upload Installers' Verification Files
         env:
-          s3_acc_id: ${{ secrets.S3_ID }}
-          s3_acc_key: ${{ secrets.S3_KEY }}
+          GH_TOKEN : ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-windows-installer-x64-$VERSION.msi.pem
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-windows-installer-x64-$VERSION.msi.sig 
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-linux-installer-x64-$VERSION.deb.pem
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-linux-installer-x64-$VERSION.deb.sig
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-linux-installer-x64-$VERSION.rpm.pem
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-linux-installer-x64-$VERSION.rpm.sig
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-macos-installer-x64-$VERSION.pkg.pem
+          gh release upload v${{ steps.set-version.outputs.version }} ./ballerina-macos-installer-x64-$VERSION.pkg.sig
+
+
+      # - name: Publish Artifacts
+      #   run: |
+      #     sudo apt-get install python3-setuptools
+      #     python3 -m pip install --user awscli
+      #     aws configure set aws_access_key_id $s3_acc_id
+      #     aws configure set aws_secret_access_key $s3_acc_key
+      #     aws s3 cp $VERSION s3://dist-dev.ballerina.io/downloads/$VERSION --recursive
+      #   env:
+      #     s3_acc_id: ${{ secrets.S3_ID }}
+      #     s3_acc_key: ${{ secrets.S3_KEY }}
