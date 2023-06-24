@@ -140,15 +140,15 @@ jobs:
           DOCKER_REPO=${{ steps.process-docker.outputs.dockerRepo }}
           cp $VERSION/ballerina-$VERSION.zip $DOCKER_REPO/base/docker/
 
-          docker build --no-cache=true --squash --build-arg BALLERINA_DIST=ballerina-$VERSION.zip -t Miranlfk/bal:$GIT_TAG  $DOCKER_REPO/base/docker/
+          docker build --no-cache=true --squash --build-arg BALLERINA_DIST=ballerina-$VERSION.zip -t miranlfk/bal:$GIT_TAG  $DOCKER_REPO/base/docker/
           rm $DOCKER_REPO/base/docker/ballerina-$VERSION.zip
           docker push ballerina/ballerina:$GIT_TAG
       - name: Sign Docker Image
         run: |
-          cosign sign Miranlfk/bal:$GIT_TAG
+          cosign sign miranlfk/bal:$GIT_TAG
       - name: Verify Docker Image
         run: |
-          cosign verify Miranlfk/bal:$GIT_TAG --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+          cosign verify miranlfk/bal:$GIT_TAG --certificate-identity=https://github.com/${{ github.actor }}/ballerina-distribution/.github/workflows/publish-release-artifacts.yml@refs/heads/master --certificate-oidc-issuer=https://token.actions.githubusercontent.com
           docker rmi ballerina/ballerina:$GIT_TAG
           docker image prune -f
 
