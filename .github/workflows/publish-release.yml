@@ -128,9 +128,7 @@ jobs:
           gh api repos/ballerina-platform/ballerina-dev-website/contents/downloads/verification-notes/release-artfiacts-verification.md?ref=release-2201.7.0 -H 'Accept: application/vnd.github.v3.raw' > release_notes.md
       - name: Update Markdown file
         run: |
-          if ${{ github.event.inputs.isPreRelease }} == "true"; then 
-            sed -i 's/{{ version }}/${{ steps.version-set.outputs.taggedVersion }}/g' release_notes.md;
-          else echo "" > release_notes.md; fi
+          if ${{ github.event.inputs.isPreRelease }} == true; then sed -i 's/{{ version }}/${{ steps.version-set.outputs.taggedVersion }}/g' release_notes.md; else echo "" > release_notes.md; fi
       - name: Read release notes from file
         id: release_notes
         uses: actions/github-script@v4
