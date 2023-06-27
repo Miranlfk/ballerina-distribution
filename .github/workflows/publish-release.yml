@@ -135,7 +135,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            if [[ ${{ github.event.inputs.isPreRelease }} == false ]]; then
+            if ${{ github.event.inputs.isPreRelease }} == false; then
               const fs = require('fs');
               const releaseNotes = fs.readFileSync('release_notes.md', 'utf8');
               core.setOutput('notes', releaseNotes);
