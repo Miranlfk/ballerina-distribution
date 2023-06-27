@@ -36,19 +36,15 @@ jobs:
       - name: Install GitHub CLI
         run: |
           npm install -g github-cli
-      # - name: Retrieve Git Tag
-      #   id: retrieve-tag
-      #   env:
-      #     GH_TOKEN : ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     release=$(gh release view --json tagName -R Miranlfk/ballerina-distribution --jq '.tagName' | sed 's/^v//')
-      #     echo "::set-output name=tag::$release"
-      #     tag=$(gh release view --json tagName -R Miranlfk/ballerina-distribution --jq '.tagName')
-      #     echo "::set-output name=release::$tag"
+      - name: Retrieve Git Tag
+        id: retrieve-tag
+        run: |
+         if ${{ github.event.inputs.isPreRelease }} == 'true'; then tagName=$(echo "$${{ github.event.inputs.versionName }}" | sed 's/$/ -${{ github.event.inputs.preReleaseSuffix }}/'); else tagName=${{ github.event.inputs.versionName }}; fi
+          echo "::set-output name=tagName::$tagName"
       - name: Retrieve MacOS Installer
         run:
           |
-          wget https://github.com/Miranlfk/ballerina-distribution/releases/download/v${{ github.event.inputs.versionName }}/ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-x64.pkg
+          wget https://github.com/Miranlfk/ballerina-distribution/releases/download/v${{ steps.retrieve-tag.outputs.tagName }}/ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-x64.pkg
       - name: Sign the MacOS Installer
         run: |
           cosign sign-blob ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-x64.pkg --output-certificate ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-x64.pkg.pem --output-signature ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-x64.pkg.sig --yes
@@ -58,7 +54,7 @@ jobs:
       - name: Retrieve MacOS-ARM Installer
         run:
           |
-          wget https://github.com/Miranlfk/ballerina-distribution/releases/download/v${{ github.event.inputs.versionName }}/ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-arm-x64.pkg
+          wget https://github.com/Miranlfk/ballerina-distribution/releases/download/v${{ steps.retrieve-tag.outputs.tagName }}/ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-arm-x64.pkg
       - name: Sign the MacOS-ARM Installer
         run: |
           cosign sign-blob ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-arm-x64.pkg --output-certificate ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-arm-x64.pkg.pem --output-signature ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-arm-x64.pkg.sig --yes
@@ -68,7 +64,7 @@ jobs:
       - name: Retrieve Windows Installer
         run:
           |
-          wget https://github.com/Miranlfk/ballerina-distribution/releases/download/v${{ github.event.inputs.versionName }}/ballerina-${{ github.event.inputs.versionName }}-swan-lake-windows-x64.msi
+          wget https://github.com/Miranlfk/ballerina-distribution/releases/download/v${{ steps.retrieve-tag.outputs.tagName }}/ballerina-${{ github.event.inputs.versionName }}-swan-lake-windows-x64.msi
       - name: Sign the Windows Installer
         run: |
           cosign sign-blob ballerina-${{ github.event.inputs.versionName }}-swan-lake-windows-x64.msi --output-certificate ballerina-${{ github.event.inputs.versionName }}-swan-lake-windows-x64.msi.pem --output-signature ballerina-${{ github.event.inputs.versionName }}-swan-lake-windows-x64.msi.sig --yes
@@ -79,10 +75,9 @@ jobs:
         env:
           GH_TOKEN : ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ${{ github.event.inputs.isPreRelease }} == 'true'; then tagName=$(echo "$${{ github.event.inputs.versionName }}" | sed 's/$/ -${{ github.event.inputs.preReleaseSuffix }}/'); else tagName=${{ github.event.inputs.versionName }}; fi
-          gh release upload v$tagName ./ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-x64.pkg.pem --clobber
-          gh release upload v$tagName ./ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-x64.pkg.sig --clobber
-          gh release upload v$tagName ./ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-arm-x64.pkg.pem --clobber
-          gh release upload v$tagName ./ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-arm-x64.pkg.sig --clobber
-          gh release upload v$tagName ./ballerina-${{ github.event.inputs.versionName }}-swan-lake-windows-x64.msi.pem --clobber
-          gh release upload v$tagName ./ballerina-${{ github.event.inputs.versionName }}-swan-lake-windows-x64.msi.sig --clobber
+          gh release upload v${{ steps.retrieve-tag.outputs.tagName }} ./ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-x64.pkg.pem --clobber
+          gh release upload v${{ steps.retrieve-tag.outputs.tagName }} ./ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-x64.pkg.sig --clobber
+          gh release upload v${{ steps.retrieve-tag.outputs.tagName }} ./ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-arm-x64.pkg.pem --clobber
+          gh release upload v${{ steps.retrieve-tag.outputs.tagName }} ./ballerina-${{ github.event.inputs.versionName }}-swan-lake-macos-arm-x64.pkg.sig --clobber
+          gh release upload v${{ steps.retrieve-tag.outputs.tagName }} ./ballerina-${{ github.event.inputs.versionName }}-swan-lake-windows-x64.msi.pem --clobber
+          gh release upload v${{ steps.retrieve-tag.outputs.tagName }} ./ballerina-${{ github.event.inputs.versionName }}-swan-lake-windows-x64.msi.sig --clobber
