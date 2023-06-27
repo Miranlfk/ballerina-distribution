@@ -39,7 +39,7 @@ jobs:
       - name: Retrieve Git Tag
         id: retrieve-tag
         run: |
-         if ${{ github.event.inputs.isPreRelease }} == 'true'; then tagName=$(echo "$${{ github.event.inputs.versionName }}" | sed 's/$/-${{ github.event.inputs.preReleaseSuffix }}/'); else tagName=${{ github.event.inputs.versionName }}; fi
+         if ${{ github.event.inputs.isPreRelease }} == 'true'; then tagName=$(echo "${{ github.event.inputs.versionName }}" | sed 's/$/-${{ github.event.inputs.preReleaseSuffix }}/'); else tagName=${{ github.event.inputs.versionName }}; fi
           echo "::set-output name=tagName::$tagName"
       - name: Retrieve MacOS Installer
         run:
