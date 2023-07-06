@@ -129,6 +129,7 @@ jobs:
       - name: Update Markdown file
         run: |
           branchName=$(echo ${{ github.ref }} | cut -d'/' -f3)
+          echo $branchName
           if ${{ github.event.inputs.isPreRelease }} == 'true'; then 
             echo "" > release_notes.md; 
           else sed -i 's/{{ version }}/${{ steps.version-set.outputs.taggedVersion }}/g' release_notes.md; sed -i 's/{{ branch }}/$branchName/g' release_notes.md; fi
