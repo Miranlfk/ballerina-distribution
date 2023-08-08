@@ -65,16 +65,16 @@ jobs:
           git commit -m "Update UUID for installer"
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Publish artifact
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          packageUser: ${{ github.actor }}
-          packagePAT: ${{ secrets.GITHUB_TOKEN }}
-          # devCentralToken: ${{ secrets.BALLERINA_DEV_CENTRAL_ACCESS_TOKEN }}
-          # ballerinaBotWorkflow: $ {{ secrets.BALLERINA_BOT_WORKFLOW }}
-        run: |
-          ./gradlew build -Pversion=${VERSION} -x centralTests -x test
-          ./gradlew release -Prelease.useAutomaticVersion=true -x test
+      # - name: Publish artifact
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     packageUser: ${{ github.actor }}
+      #     packagePAT: ${{ secrets.GITHUB_TOKEN }}
+      #     # devCentralToken: ${{ secrets.BALLERINA_DEV_CENTRAL_ACCESS_TOKEN }}
+      #     # ballerinaBotWorkflow: $ {{ secrets.BALLERINA_BOT_WORKFLOW }}
+      #   run: |
+      #     ./gradlew build -Pversion=${VERSION} -x centralTests -x test
+      #     ./gradlew release -Prelease.useAutomaticVersion=true -x test
       - name: Checkout docker repo
         uses: actions/checkout@v2
         with:
